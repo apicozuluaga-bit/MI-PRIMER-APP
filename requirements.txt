@@ -7,3 +7,4 @@ seaborn
 fpdf
 xlsxwriter
 reportlab
+cairosvg
