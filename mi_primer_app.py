@@ -10,134 +10,15 @@ import matplotlib.pyplot as plt
 
 st.markdown("<h1 style='text-align: center; color:#004aad;'>Smart Portafolio - Simulación de Escenarios</h1>", unsafe_allow_html=True)
 
-# app.py (versión corregida y con fallback visible)
-import streamlit as st
-from io import BytesIO
-import datetime
-
-# importa componentes de forma explícita
-import streamlit.components.v1 as components
-
-# intentar importar cairosvg, pero no morir si falta
+# convierte y muestra PNG (opcional)
 try:
     import cairosvg
-    CAIROSVG_OK = True
-except Exception:
-    CAIROSVG_OK = False
-
-st.set_page_config(page_title="Smart Portafolio - Logo Maker", layout="centered")
-
-# -----------------------
-# SVG builder
-# -----------------------
-def build_svg(symbol_color="#38FFB0", text_color="#0D0D0D", bg_color="#FFFFFF",
-              tilt_deg=0, brand_text="Smart Portafolio", tagline="Optimiza. Decide. Escala.",
-              caps=False):
-    display_text = brand_text.upper() if caps else brand_text
-    width = 900
-    height = 360
-
-    svg = f'''<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
-  <rect width="100%" height="100%" fill="{bg_color}" rx="20" />
-  <g transform="translate(80,40) rotate({tilt_deg} 0 0)">
-    <text x="0" y="150" font-family="Montserrat, Inter, Arial, sans-serif" font-weight="700" font-size="220" fill="{symbol_color}" stroke="{symbol_color}" >
-      S
-    </text>
-    <text x="42" y="120" font-family="Montserrat, Inter, Arial, sans-serif" font-weight="800" font-size="140" fill="none" stroke="{text_color}" stroke-width="6" opacity="0.12">
-      $
-    </text>
-    <polygon points="210,90 250,110 210,130" fill="{text_color}" opacity="0.9" transform="translate(0,22) rotate(8 230 110)"/>
-  </g>
-  <g transform="translate(320,120)">
-    <text x="0" y="0" font-family="Montserrat, Inter, Arial, sans-serif" font-weight="700" font-size="40" fill="{text_color}">{display_text}</text>
-    <text x="0" y="48" font-family="Inter, Arial, sans-serif" font-weight="500" font-size="18" fill="#6B7280">{tagline}</text>
-  </g>
-  <rect x="320" y="90" width="120" height="4" rx="2" fill="{symbol_color}" opacity="0.9"/>
-</svg>
-'''
-    return svg
-
-def svg_to_png_bytes(svg_str):
-    if not CAIROSVG_OK:
-        raise RuntimeError("cairosvg no está instalado en el entorno.")
-    png_bytes = cairosvg.svg2png(bytestring=svg_str.encode('utf-8'))
-    return png_bytes
-
-def make_download_button(data_bytes, filename, label, mime):
-    st.download_button(label=label, data=data_bytes, file_name=filename, mime=mime)
-
-# -----------------------
-# UI
-# -----------------------
-st.title("🎨 Logo Maker — Smart Portafolio (versión C)")
-st.markdown("Genera un logo dinámico, juvenil y con un guiño subliminal. Ajusta y descarga.")
-
-with st.sidebar:
-    scheme = st.selectbox("Tema visual", ["Claro (texto oscuro)", "Oscuro (texto claro)"])
-    inclination = st.selectbox("Inclinación", ["Recto (0°)", "Inclinado 8°"])
-    caps = st.checkbox("Usar TODO EN MAYÚSCULAS", value=False)
-    brand_text = st.text_input("Texto de marca", "Smart Portafolio")
-    tagline = st.text_input("Tagline (pequeño)", "Optimiza. Decide. Escala.")
-    fmt = st.multiselect("Formatos", ["SVG", "PNG"], default=["SVG","PNG"])
-
-if scheme.startswith("Claro"):
-    bg_color = "#FFFFFF"; text_color = "#0D0D0D"
-else:
-    bg_color = "#0D0D0D"; text_color = "#FFFFFF"
-
-symbol_color = "#38FFB0"
-tilt_deg = 8 if inclination.startswith("Inclinado") else 0
-
-svg_str = build_svg(symbol_color=symbol_color, text_color=text_color,
-                    bg_color=bg_color, tilt_deg=tilt_deg,
-                    brand_text=brand_text, tagline=tagline, caps=caps)
-
-st.subheader("Preview")
-
-# Mostrar SVG con components.html (fallback a texto si falla)
-try:
-    svg_html = f'<div style="width:100%; display:flex; justify-content:center;">{svg_str}</div>'
-    components.html(svg_html, height=420)
+    png_bytes = cairosvg.svg2png(bytestring=SVG_LOGO.encode("utf-8"))
+    st.image(png_bytes, width=600, caption="Logo (PNG generado desde SVG)")
+    st.download_button("📥 Descargar logo (PNG)", png_bytes, file_name="smart_portafolio_icon.png", mime="image/png")
 except Exception as e:
-    st.error("No se pudo renderizar SVG en componentes HTML. Mostrando código SVG crudo.")
-    st.code(svg_str[:1000] + ("\n... (truncado)" if len(svg_str)>1000 else ""))
+    st.info("No se generó PNG: instala 'cairosvg' para habilitar conversión SVG→PNG.")
 
-st.subheader("Descargas")
-now = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-
-if "SVG" in fmt:
-    svg_bytes = svg_str.encode("utf-8")
-    make_download_button(svg_bytes, f"smart_portafolio_{now}.svg", "Descargar SVG", "image/svg+xml")
-
-if "PNG" in fmt:
-    if CAIROSVG_OK:
-        try:
-            png_bytes = svg_to_png_bytes(svg_str)
-            # mostrar inline como imagen (esto asegura que el usuario vea algo)
-            st.image(png_bytes, caption="Preview PNG (convertido desde SVG)", use_column_width=False)
-            make_download_button(png_bytes, f"smart_portafolio_{now}.png", "Descargar PNG", "image/png")
-        except Exception as e:
-            st.error("Error al convertir SVG→PNG.")
-            st.write("Detalle:", e)
-    else:
-        st.warning("cairosvg no instalado — no se puede generar PNG. Instala 'cairosvg' en requirements.")
-        # como ayuda, mostramos un PNG muy básico generado por PIL (si está disponible)
-        try:
-            from PIL import Image, ImageDraw, ImageFont
-            # fallback visual sencillo
-            img = Image.new("RGB", (900,360), color=bg_color)
-            draw = ImageDraw.Draw(img)
-            draw.text((330,120), brand_text, fill=text_color)
-            bio = BytesIO()
-            img.save(bio, format="PNG")
-            bio.seek(0)
-            st.image(bio.read(), caption="Fallback PNG (PIL) mostrado")
-        except Exception:
-            pass
-
-st.markdown("---")
-st.caption("Si no ves cambios: guarda el archivo y reinicia la app con `streamlit run app.py`.")
 
 st.write("""
 Esta aplicación realiza una *simulación de escenarios de inversión, aplicando la *Teoría Moderna de Portafolios de Markowitz.
