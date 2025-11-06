@@ -79,7 +79,6 @@ tickers_input = st.sidebar.text_input(
 # Convertir texto en lista
 tickers = [t.strip().upper() for t in tickers_input.split(",") if t.strip() != ""]
 
-
 # Rango de fechas
 fecha_inicio = st.sidebar.date_input("📅 Fecha Inicial", pd.to_datetime("2020-01-01"))
 fecha_fin = st.sidebar.date_input("📅 Fecha Final", pd.to_datetime("2023-12-31"))
@@ -95,7 +94,32 @@ escenario = st.sidebar.selectbox("💰 Escenario de Inversión", ["Conservador",
 
 # Botón para ejecutar
 descargar = st.sidebar.button("📥 Descargar y Analizar")
+    
+# Validación de tickers
+def validar_tickers(tickers):
+    tickers_validos = []
+    for ticker in tickers:
+        try:
+            info = yf.Ticker(ticker).info
+            if info.get('regularMarketPrice') is not None:
+                tickers_validos.append(ticker)
+            else:
+                st.warning(f"⚠ Ticker {ticker} no encontrado en Yahoo Finance")
+        except:
+            st.warning(f"⚠ Error al validar ticker {ticker}")
+    return tickers_validos
 
+# Ejecutar análisis al hacer clic
+if descargar:
+    if len(tickers) == 0:
+        st.error("❌ Por favor ingresa al menos un ticker válido")
+        st.stop()
+    
+    tickers = validar_tickers(tickers)
+    
+    if len(tickers) == 0:
+        st.error("❌ No se encontraron tickers válidos")
+        st.stop()
 
 # Descarga de datos
 
@@ -165,11 +189,11 @@ st.markdown("---")
 st.subheader("🧠 Interpretación del Escenario Seleccionado")
 
 if escenario == "Conservador":
-    st.info("🔹 Este portafolio busca minimizar el riesgo, con un enfoque en estabilidad. Su rendimiento esperado es menor, pero ofrece menor volatilidad y pérdidas potenciales.")
+    st.info("🟩 Este portafolio busca minimizar el riesgo, con un enfoque en estabilidad. Su rendimiento esperado es menor, pero ofrece menor volatilidad y pérdidas potenciales.")
 elif escenario == "Moderado":
     st.info("🟨 Este portafolio equilibra riesgo y rendimiento. Es ideal para inversores con tolerancia media al riesgo que buscan un crecimiento sostenido.")
 else:
-    st.info("🔺 Este portafolio asume mayor riesgo con el objetivo de maximizar el rendimiento. Es adecuado para inversionistas con alta tolerancia a la volatilidad y posibles pérdidas.")
+    st.info("🟥 Este portafolio asume mayor riesgo con el objetivo de maximizar el rendimiento. Es adecuado para inversionistas con alta tolerancia a la volatilidad y posibles pérdidas.")
 
 # Evolución del valor monetario
 
