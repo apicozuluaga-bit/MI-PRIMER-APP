@@ -248,3 +248,101 @@ elif mejor_escenario == "Moderado":
     st.info("💡 Recomendación: Este portafolio equilibra riesgo y rendimiento, siendo adecuado para inversores con tolerancia media al riesgo.")
 else:
     st.info("💡 Recomendación: Este portafolio maximiza el rendimiento a costa de mayor volatilidad. Ideal para perfiles arriesgados que buscan crecimiento a largo plazo.")
+
+# Exportar datos a Excel
+excel_buffer = BytesIO()
+
+# Combinar datos y retornos para exportar todo junto
+with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+    data.to_excel(writer, sheet_name='Precios')
+    returns.to_excel(writer, sheet_name='Rendimientos')
+    df_resultados.to_excel(writer, sheet_name='Escenarios')
+
+st.download_button(
+    label="📊 Descargar en Excel",
+    data=excel_buffer.getvalue(),
+    file_name="analisis_portafolio.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+# Generar reporte PDF simple (texto) 
+
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+
+# --- Crear PDF con formato ---
+st.subheader("📄 Generar Reporte en PDF")
+
+pdf_buffer = BytesIO()
+
+# Crear documento
+doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+styles = getSampleStyleSheet()
+elements = []
+
+# --- Título ---
+title = Paragraph("<b><font size=18 color='#004aad'>SMART PORTAFOLIO - REPORTE DE INVERSIÓN</font></b>", styles["Title"])
+elements.append(title)
+elements.append(Spacer(1, 0.2 * inch))
+
+# --- Datos generales ---
+intro = Paragraph(f"""
+<font size=12>
+<b>Escenario seleccionado:</b> {escenario}<br/>
+<b>Activos analizados:</b> {', '.join(tickers)}<br/>
+<b>Inversión inicial:</b> ${inversion_inicial:,.2f}
+</font>
+""", styles["Normal"])
+elements.append(intro)
+elements.append(Spacer(1, 0.2 * inch))
+
+# --- Resultados ---
+resumen_data = [
+    ["Métrica", "Valor"],
+    ["Rendimiento esperado", f"{port_return:.2%}"],
+    ["Volatilidad esperada", f"{port_volatility:.2%}"],
+    ["Ratio de Sharpe", f"{sharpe_ratio:.2f}"],
+    ["Escenario recomendado", mejor_escenario]
+]
+
+table = Table(resumen_data, hAlign='LEFT')
+table.setStyle(TableStyle([
+    ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
+    ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+    ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+    ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+]))
+elements.append(table)
+elements.append(Spacer(1, 0.3 * inch))
+
+# --- Conclusión ---
+conclusion = Paragraph(f"""
+<font size=12>
+La simulación de escenarios permite observar cómo el riesgo y el rendimiento están estrechamente relacionados.<br/>
+El portafolio <b>{mejor_escenario}</b> presenta la mejor eficiencia según el Ratio de Sharpe.<br/><br/>
+<b>Interpretación:</b><br/>
+{("Este portafolio prioriza la estabilidad, ideal para perfiles conservadores." if mejor_escenario == "Conservador" 
+else "Este portafolio equilibra riesgo y rendimiento, ideal para inversores moderados." 
+if mejor_escenario == "Moderado" 
+else "Este portafolio busca maximizar ganancias, ideal para perfiles arriesgados.")}
+</font>
+""", styles["Normal"])
+elements.append(conclusion)
+
+# --- Guardar PDF ---
+doc.build(elements)
+pdf_buffer.seek(0)
+
+st.download_button(
+    label="📑 Descargar Reporte en PDF (formateado)",
+    data=pdf_buffer,
+    file_name="Reporte_Portafolio.pdf",
+    mime="application/pdf"
+)
