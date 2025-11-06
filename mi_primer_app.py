@@ -45,7 +45,7 @@ st.markdown("""
 <div class="main-header">
     <div class="main-title">
         <span>🌱</span>
-        <span>Smart Portafolio</span>
+        <span>Smart Portfolio</span>
         <span>📊</span>
     </div>
     <div class="main-subtitle">
