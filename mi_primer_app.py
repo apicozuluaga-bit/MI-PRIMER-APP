@@ -249,6 +249,10 @@ elif mejor_escenario == "Moderado":
 else:
     st.info("💡 Recomendación: Este portafolio maximiza el rendimiento a costa de mayor volatilidad. Ideal para perfiles arriesgados que buscan crecimiento a largo plazo.")
 
+from io import BytesIO
+
+st.subheader("📥 Descarga de Resultados")
+
 # Exportar datos a Excel
 excel_buffer = BytesIO()
 
