@@ -15,3 +15,5 @@ fpdf
 xlsxwriter
 
 reportlab
+
+BytesIO
