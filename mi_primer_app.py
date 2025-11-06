@@ -18,9 +18,8 @@ import datetime
 
 st.set_page_config(page_title="Smart Portafolio - Logo Maker", layout="centered")
 
-# -----------------------
 # Helpers
-# -----------------------
+
 def build_svg(symbol_color="#38FFB0", text_color="#0D0D0D", bg_color="#FFFFFF",
               tilt_deg=0, brand_text="Smart Portafolio", tagline="Optimiza. Decide. Escala.",
               caps=False):
@@ -80,9 +79,8 @@ def make_download_button(data_bytes, filename, label, mime):
         mime=mime
     )
 
-# -----------------------
 # UI
-# -----------------------
+
 st.title("🎨 Logo Maker — Smart Portafolio (versión C)")
 st.markdown("Genera un logo dinámico, juvenil y con un guiño subliminal al dinero. Ajusta y descarga.")
 
