@@ -9,3 +9,9 @@ numpy
 matplotlib
 
 seaborn
+
+fpdf
+
+xlsxwriter
+
+reportlab
