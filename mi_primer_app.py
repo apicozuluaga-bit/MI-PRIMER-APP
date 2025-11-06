@@ -10,15 +10,27 @@ import matplotlib.pyplot as plt
 
 st.markdown("<h1 style='text-align: center; color:#004aad;'>Smart Portafolio - Simulación de Escenarios</h1>", unsafe_allow_html=True)
 
-# convierte y muestra PNG (opcional)
-try:
-    import cairosvg
-    png_bytes = cairosvg.svg2png(bytestring=SVG_LOGO.encode("utf-8"))
-    st.image(png_bytes, width=600, caption="Logo (PNG generado desde SVG)")
-    st.download_button("📥 Descargar logo (PNG)", png_bytes, file_name="smart_portafolio_icon.png", mime="image/png")
-except Exception as e:
-    st.info("No se generó PNG: instala 'cairosvg' para habilitar conversión SVG→PNG.")
+import streamlit as st
 
+SVG_LOGO = r"""PASTA_SVG_AQUI"""
+# reemplaza PA... por el SVG completo (la cadena HTML arriba). 
+# Para evitar problemas con comillas, pega exactamente el bloque SVG entre las tres comillas.
+
+st.set_page_config(page_title="Smart Portafolio", page_icon="💹", layout="centered")
+
+# Mostrar SVG centrado y con un poquito de padding
+st.markdown(
+    f"""
+    <div style="display:flex; justify-content:center; align-items:center; padding-top:18px; padding-bottom:8px;">
+      {SVG_LOGO}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Botón para descargar el SVG
+svg_bytes = SVG_LOGO.encode("utf-8")
+st.download_button("📥 Descargar logo (SVG)", svg_bytes, file_name="smart_portafolio_icon.svg", mime="image/svg+xml")
 
 st.write("""
 Esta aplicación realiza una *simulación de escenarios de inversión, aplicando la *Teoría Moderna de Portafolios de Markowitz.
